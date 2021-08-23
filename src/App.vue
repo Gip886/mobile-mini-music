@@ -1,32 +1,26 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <top-bar />
+    <bottom-box/>
+    <tab-bar />
   </div>
 </template>
 
-<style lang="less">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
+import TabBar from "@/components/tabbar/TabBar.vue";
+import TopBar from "./components/topbar/TopBar.vue";
+import BottomBox from './components/bottombox/BottomBox.vue';
 
-#nav {
-  padding: 30px;
+export default {
+  name: "app",
+  components: { TabBar, TopBar, BottomBox },
+};
+</script>
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+<style>
+@import url("./assets/css/normalize.css");
+:root {
+  --highlight-color: #c5b5f0;
+  --highlight-deep-color: #276eda;
 }
 </style>
