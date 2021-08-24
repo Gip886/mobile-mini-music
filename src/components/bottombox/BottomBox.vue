@@ -1,191 +1,78 @@
 <template>
-  <div class="bottom-box" @click="showPlayingPage">
+  <div class="bottom-box">
     <div class="bottom-box-album-img">
       <img
-        :src="getAlbumImgUrl"
+        :src="getPicUrl"
         :style="haveStarted === true ? albumImgStyle : ''"
       />
     </div>
-    <div class="current-song-info">
-      {{
-        currentList.length === 0
-          ? ""
-          : currentList[currentListIndex].singer.name +
-            "-" +
-            currentList[currentListIndex].songname
-      }}
+    <div class="current-song-info">{{ currentMusicInfo.name }}</div>
+    <div class="bottom-box-playing-or-paused">
+      <img src="../../assets/img/bottombox/播放.svg" alt="" />
     </div>
-    <div class="bottom-box-playing-or-paused" @click.stop="playContral">
-      <img :src="audioPaused === true ? pausedImgUrl : playingImgUrl" />
-    </div>
-    <audio id="audio" :src="currentSongUrl" autoplay></audio>
+    <audio id="audio" src="" autoplay></audio>
   </div>
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 export default {
   data() {
     return {
-      currentTime: null,
-      duration: null,
       defaultAlbumImgUrl: require("@/assets/img/bottombox/default-album-img.jpg"),
-      albumImgUrl: null,
-      playingImgUrl: require("@/assets/img/bottombox/playing.svg"),
-      pausedImgUrl: require("@/assets/img/bottombox/paused.svg"),
     };
   },
   computed: {
     ...mapState({
       audio: (state) => state.audio,
-      haveStarted: (state) => state.haveStarted,
-      albumImgStyle: (state) => state.albumImgStyle,
-      currentList: (state) => state.currentList,
-      currentListIndex: (state) => state.currentListIndex,
-      currentSongUrl: (state) => state.currentSongUrl,
-      playMode: (state) => state.playMode,
-      playSpeed: (state) => state.playSpeed,
-      audioPaused: (state) => state.audioPaused,
-    }),
-    getAlbumImgUrl() {
-      //刚启动和歌曲没有专辑图片时，使用默认专辑图片作为背景
-      if (
-        this.currentList.length === 0 ||
-        this.currentList[this.currentListIndex].albumname === "   "
-      ) {
-        this.albumImgUrl = this.defaultAlbumImgUrl;
-      } else {
-        this.albumImgUrl = this.currentList[this.currentListIndex].albumimg;
-      }
-      return this.albumImgUrl;
-    },
-    mounted() {
-      var audio = document.querySelector("#audio");
-
-      //将audio发送到vuex前先设置一下，不然默认最大音量受不了
-      if (localStorage.hasOwnProperty("volume")) {
-        audio.volume = parseInt(localStorage.getItem("volume")) / 100;
-      } else {
-        audio.volume = 0.2;
-      }
-
-      //将audio发送到vuex，方便其他组件操作audio
-      this.$store.commit("sendAudio", audio);
-
-      this.addAudioEventListeners();
-    },
-    methods: {
-      addAudioEventListeners() {
-        this.audio.addEventListener("canplay", this.getDuration);
-        this.audio.addEventListener("timeupdate", this.getCurrentTime);
-        this.audio.addEventListener("ended", this.autoPlayNextSong);
-      },
-
-      getDuration() {
-        this.duration = this.audio.duration;
-        this.$store.commit("sendAudioPaused", false);
-
-        //将上一首的播放速率延续到下一首
-        this.audio.playbackRate = this.playSpeed;
-
-        //检测app是否是刚启动，防止刚启动专辑图片就开始旋转
-        this.$store.commit("sendHaveStarted", true);
-
-        this.$store.commit("sendDuration", this.duration);
-
-        //app已启动，播放歌曲专辑图片开始转动
-        this.$store.commit("albumRotateRunning");
-      },
-
-      autoPlayNextSong() {
-        switch (this.playMode) {
-          case "listForwardMode":
-            //默认顺序播放，不做处理,直接下一首
-            this.$store.commit("playNextSong");
-            break;
-
-          case "singleCycleMode":
-            //单曲循环，播完又开始播
-            this.audio.play();
-            break;
-
-          case "listCycleMode":
-            //列表循环，处理已嵌入vuex中的playNextSong中，所以直接下一首
-            this.$store.commit("playNextSong");
-            break;
-
-          case "randomMode":
-            //随机播放
-            this.$store.commit("handleRandomMode");
-            break;
-        }
-
-        setTimeout(() => {
-          this.audio.playbackRate = this.playSpeed;
-        }, 1000);
-      },
-
-      getCurrentTime() {
-        this.currentTime = this.audio.currentTime;
-        this.$store.commit("sendCurrentTime", this.currentTime);
-      },
-
-      playContral() {
-        //确保当前有歌单才能播放或暂停
-        if (this.currentList.length !== 0) {
-          if (this.audio.paused) {
-            this.audio.play();
-            this.$store.commit("sendAudioPaused", false);
-            this.$store.commit("albumRotateRunning");
-          } else {
-            this.audio.pause();
-            this.$store.commit("sendAudioPaused", true);
-            this.$store.commit("albumRotatePaused");
-          }
+      currentIndex: "currentIndex",
+      haveStarted: "haveStarted",
+      getPicUrl: function (state) {
+        if (state.currentIndex != null) {
+          return state.top100List[state.currentIndex].picUrl;
         } else {
-          this.audio.pause();
-          this.$store.commit("albumRotatePaused");
+          return this.defaultAlbumImgUrl;
         }
       },
-
-      showPlayingPage() {
-        this.$router.push("/playing");
-      },
-    },
+    }),
+    // currentMusicInfo() {
+    //   if (this.$store.getters.currentMusicInfo != null) {
+    //     return this.$store.getters.currentMusicInfo;
+    //   } else {
+    //     return {};
+    //   }
+    // },
+    ...mapGetters(["currentMusicInfo"]),
   },
 };
 </script>
 
 <style>
 .bottom-box {
+  display: flex;
+  justify-content: space-between;
   width: 98%;
   height: 50px;
   position: fixed;
-  display: flex;
-  justify-content: space-between;
-  left: 1%;
-  right: 1%;
+  left: 2%;
+  right: 2%;
   bottom: 50px;
   background-color: rgba(255, 255, 255, 0.3);
   border-radius: 25px;
 }
-
 .bottom-box-album-img > img {
   width: 50px;
-  height: 50px;
+  /* height: 50px; */
   border-radius: 50%;
 }
-
 @keyframes albumRotate {
   from {
     transform: rotate(0deg);
   }
-
   to {
     transform: rotate(360deg);
   }
 }
-
 .current-song-info {
   height: 50px;
   line-height: 50px;
@@ -195,16 +82,14 @@ export default {
   white-space: nowrap;
   overflow: hidden;
 }
-
 .bottom-box-playing-or-paused {
   width: 30px;
   height: 30px;
   margin-top: 8px;
   margin-right: 10px;
-  border: 2px solid #9a79d2;
+  border: 2px solid #e0d7f0;
   border-radius: 50%;
 }
-
 .bottom-box-playing-or-paused > img {
   width: 30px;
 }

@@ -1,7 +1,8 @@
 <template>
   <div id="app">
     <top-bar />
-    <bottom-box/>
+    <view-box />
+    <bottom-box />
     <tab-bar />
   </div>
 </template>
@@ -9,11 +10,12 @@
 <script>
 import TabBar from "@/components/tabbar/TabBar.vue";
 import TopBar from "./components/topbar/TopBar.vue";
-import BottomBox from './components/bottombox/BottomBox.vue';
+import BottomBox from "./components/bottombox/BottomBox.vue";
+import ViewBox from "./components/viewbox/ViewBox.vue";
 
 export default {
   name: "app",
-  components: { TabBar, TopBar, BottomBox },
+  components: { TabBar, TopBar, BottomBox, ViewBox },
 };
 </script>
 

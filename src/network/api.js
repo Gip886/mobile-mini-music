@@ -17,3 +17,33 @@ export function getRecommendMusic(limit) {
         }
     })
 }
+
+
+export function getNewMusic(limit) {
+    return request({
+        url: '/personalized/newsong',
+        params: {
+            limit
+        }
+    })
+}
+
+export class Music {
+    constructor(musicInfo) {
+        this.name = musicInfo.name,
+            this.id = musicInfo.id,
+            this.picUrl = musicInfo.picUrl,
+            this.songer = musicInfo.song.artists[0].name
+        this.musicUrl = null
+    }
+}
+
+
+export function getMusicDetail(id) {
+    return request({
+        url: '/song/url',
+        params: {
+            id
+        }
+    })
+}

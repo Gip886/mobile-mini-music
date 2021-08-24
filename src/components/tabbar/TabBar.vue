@@ -1,6 +1,6 @@
 <template>
   <div class="tab-bar">
-    <router-link class="router-link" tag="div" to="/tabbar">
+    <router-link class="router-link" tag="div" to="/discover">
       <img
         src="../../assets/img/tabbat/发现.svg"
         alt=""
