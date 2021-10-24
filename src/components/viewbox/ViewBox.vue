@@ -17,5 +17,6 @@ export default {};
   top: 50px;
   bottom: 100px;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 </style>

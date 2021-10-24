@@ -1,16 +1,20 @@
 <template>
-  <div class="bottom-box">
+  <div class="bottom-box" @click="showPlayingPage">
     <div class="bottom-box-album-img">
       <img
-        :src="getPicUrl"
-        :style="haveStarted === true ? albumImgStyle : ''"
+        :src="
+          currentMusicInfo.picUrl == null
+            ? defaultAlbumImgUrl
+            : currentMusicInfo.picUrl
+        "
+        :style="isPlay == true ? palyStyle : pauseStyle"
       />
     </div>
     <div class="current-song-info">{{ currentMusicInfo.name }}</div>
     <div class="bottom-box-playing-or-paused">
-      <img src="../../assets/img/bottombox/播放.svg" alt="" />
+      <img :src="isPlay ? pauseImg : playImg" alt="" @click.stop="playClick" />
     </div>
-    <audio id="audio" src="" autoplay></audio>
+    <audio id="audio" :src="currentMusicItem.musicUrl" autoplay></audio>
   </div>
 </template>
 
@@ -20,18 +24,30 @@ export default {
   data() {
     return {
       defaultAlbumImgUrl: require("@/assets/img/bottombox/default-album-img.jpg"),
+      palyStyle: "animation: albumRotate 15s linear infinite running",
+      pauseStyle: "animation: albumRotate 15s linear infinite paused",
+      playImg: require("../../assets/img/bottombox/播放.svg"),
+      pauseImg: require("../../assets/img/bottombox/停止.svg"),
     };
   },
   computed: {
     ...mapState({
+      isPlay: "isPlay",
       audio: (state) => state.audio,
       currentIndex: "currentIndex",
-      haveStarted: "haveStarted",
-      getPicUrl: function (state) {
-        if (state.currentIndex != null) {
-          return state.top100List[state.currentIndex].picUrl;
+      currentList: "currentList",
+      // getPicUrl: function (state) {
+      //   if (state.currentIndex != null) {
+      //     return state.top100List[state.currentIndex].picUrl;
+      //   } else {
+      //     return this.defaultAlbumImgUrl;
+      //   }
+      // },
+      currentMusicItem: (state) => {
+        if (state.currentMusicItem != null) {
+          return state.currentMusicItem;
         } else {
-          return this.defaultAlbumImgUrl;
+          return {};
         }
       },
     }),
@@ -43,6 +59,76 @@ export default {
     //   }
     // },
     ...mapGetters(["currentMusicInfo"]),
+  },
+  mounted() {
+    var audio = document.querySelector("#audio");
+
+    // 将audio发送到vuex前先设置一下，不然默认最大音量受不了
+    // if (localStorage.hasOwnProperty("volume")) {
+    //   audio.volume = parseInt(localStorage.getItem("volume")) / 100;
+    // } else {
+    //   audio.volume = 0.2;
+    // }
+
+    audio.volume = 0.8;
+
+    //将audio发送到vuex，方便其他组件操作audio
+    this.$store.commit("sendAudio", audio);
+
+    this.$store.commit("sendAudioVolume", 80);
+
+    this.addAudioEventListeners();
+  },
+  methods: {
+    addAudioEventListeners() {
+      this.audio.addEventListener("canplay", this.getDuration);
+      this.audio.addEventListener("timeupdate", this.getCurrentTime);
+      this.audio.addEventListener("ended", this.autoPlayNextSong);
+    },
+    getDuration() {
+      let duration = this.audio.duration;
+      // console.log(this.duration);
+      this.$store.commit("sendDuration", duration);
+      // 适应下bug
+      this.audio.play();
+      this.$store.commit("changeAudioPlay", true);
+    },
+    getCurrentTime() {
+      let currentTime = this.audio.currentTime;
+      this.$store.commit("sendCurrentTime", currentTime);
+    },
+    autoPlayNextSong() {
+      this.$store.commit("changeAudioPlay", false);
+
+      if (this.currentIndex < this.currentList.length) {
+        this.$store.state.currentIndex++;
+
+        this.$store.dispatch("getMusicDetail", {
+          musicItem: this.currentList[this.currentIndex],
+          index: this.currentIndex,
+        });
+
+        this.$store.dispatch("getMusiclyric", {
+          id: this.currentList[this.currentIndex].id,
+        });
+      }
+    },
+    playClick() {
+      if (this.audio.src != "") {
+        if (this.isPlay) {
+          this.audio.pause();
+          this.$store.commit("changeAudioPlay", false);
+        } else {
+          this.audio.play();
+          this.$store.commit("changeAudioPlay", true);
+        }
+      }
+    },
+    showPlayingPage() {
+      if (this.$route.path != "/playing") {
+        this.$router.push("/playing");
+      }
+    },
   },
 };
 </script>

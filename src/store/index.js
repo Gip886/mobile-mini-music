@@ -16,8 +16,8 @@ export default new Vuex.Store({
   state,
   getters: {
     currentMusicInfo(state) {
-      if (state.top100List[state.currentIndex] != null) {
-        return state.top100List[state.currentIndex]
+      if (state.currentList[state.currentIndex] != null) {
+        return state.currentList[state.currentIndex]
       } else {
         return {}
       }

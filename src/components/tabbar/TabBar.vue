@@ -24,7 +24,7 @@
       />
       <div class="tab-bar-item-text">喜欢</div>
     </router-link>
-    <router-link class="router-link" tag="div" to="/123">
+    <router-link class="router-link" tag="div" to="/lyric">
       <img
         src="../../assets/img/tabbat/歌词.svg"
         alt=""

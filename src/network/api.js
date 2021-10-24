@@ -47,3 +47,15 @@ export function getMusicDetail(id) {
         }
     })
 }
+
+
+export function getMusiclyric(id) {
+    return request({
+        url: '/lyric',
+        params: {
+            id
+        }
+    })
+}
+
+

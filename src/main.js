@@ -5,6 +5,7 @@ import store from './store'
 import './plugins/element.js'
 import 'normalize.css'
 
+console.log(process.env.NODE_ENV);
 
 Vue.config.productionTip = false
 

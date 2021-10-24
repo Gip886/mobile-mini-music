@@ -3,7 +3,8 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 // const TabBar = () => import('../components/tabbar/TabBar.vue')
 const DiscoverPage = () => import('../views/DiscoverPage.vue')
-
+const PlayPage = () => import('../views/PlayingPage.vue')
+const LyricPage = () => import('../views/LyricPage.vue')
 
 
 Vue.use(VueRouter)
@@ -26,13 +27,24 @@ const routes = [
     path: '/discover',
     name: 'Discover',
     component: DiscoverPage
+  },
+  {
+    path: '/playing',
+    name: 'Playing',
+    component: PlayPage
+  },
+  {
+    path: '/lyric',
+    name: 'Lyric',
+    component: LyricPage
   }
 
 ]
 
 const router = new VueRouter({
-  mode: 'history',
+  // mode: 'history',
   base: process.env.BASE_URL,
+  // base:  '/mini-music/',
   routes
 })
 

@@ -1,18 +1,23 @@
 <template>
   <div class="top-100-page">
-    <!-- <el-backtop
+    <el-backtop
       target=".top-100-item-box"
       :bottom="100"
-      style="background-color: rgba(255, 255, 255, 0); "
+      style="background-color: rgba(255, 255, 255, 0)"
     >
       <img src="../assets/img/DiscoverPage/火箭.svg" width="35px" alt="" />
-    </el-backtop> -->
+    </el-backtop>
 
-    <div class="top-100-backtop" @click="backTop" v-show="isShowBackTop">
+    <!-- <div class="top-100-backtop" @click="backTop" v-show="isShowBackTop">
       <img src="../assets/img/DiscoverPage/backtop.svg" width="40px" />
-    </div>
+    </div> -->
     <div class="top-100-title">Top 100</div>
-    <div class="top-100-item-box" ref="top100ItemBoxDom">
+    <div
+      class="top-100-item-box"
+      ref="top100ItemBoxDom"
+      v-infinite-scroll="load"
+      infinite-scroll-immediate="false"
+    >
       <div
         class="top-100-item"
         v-for="(item, index) in top100List"
@@ -57,18 +62,21 @@ export default {
       markedImgUrl: require("@/assets/img/DiscoverPage/marked.svg"),
       items: [],
       // items: this.top100List,
-      limit: 100,
+      limit: 36,
       isShowBackTop: false,
       scrollerPosition: 0,
       playingSongStyle: {
         transform: "scale(1.1)",
       },
+      loading: false,
     };
   },
   computed: {
     ...mapState({
       top100List: (state) => state.top100List,
       currentIndex: (state) => state.currentIndex,
+      audio: "audio",
+      isPlay: "isPlay",
     }),
   },
   mounted() {
@@ -87,7 +95,7 @@ export default {
     //更改称全局请求数据保存到
     // this.$store.commit("handleTop100List", 100);
     this.$store.dispatch("getNewMusic", {
-      limit: 100,
+      limit: this.limit,
     });
 
     //获取歌曲数据
@@ -100,6 +108,13 @@ export default {
     // });
   },
   methods: {
+    load() {
+      // alert("++");
+      // this.$store.dispatch("loadMore", {
+      //   limit: 10,
+      // });
+      this.$message("加载更多中");
+    },
     backTop() {
       // 原作者直接让其=0，没有动画效果
       // console.log(this.$refs.top100ItemBoxDom.scrollTop);
@@ -116,9 +131,26 @@ export default {
       });
     },
     playThisSong(item, index) {
-      this.$store.commit("changeCurrentIndex", index);
+      let playload = {
+        page: "DiscoverPage",
+        currentIndex: index,
+      };
 
-      this.$store.dispatch("getMusicDetail", { musicItem: item, index: index });
+      if (index == this.currentIndex) {
+        if (!this.isPlay) {
+          this.audio.play();
+          this.$store.commit("changeAudioPlay", true);
+        }
+      } else {
+        this.$store.commit("changeCurrentIndex", playload);
+        this.$store.dispatch("getMusicDetail", {
+          musicItem: item,
+          index: index,
+        });
+        this.$store.dispatch("getMusiclyric", {
+          id: item.id,
+        });
+      }
     },
   },
   //     beforeRouteLeave(to, from, next) {
